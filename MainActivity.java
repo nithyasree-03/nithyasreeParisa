@@ -1,112 +1,75 @@
-package com.example.quiz_app;
+package com.example.todolistapp;
 
-import android.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import android.graphics.Color;
 import android.os.Bundle;
+import androidx.appcompat.app.AlertDialog;
+import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    TextView questionTextView;
-    TextView totalQuestionTextView;
-    Button ansA,ansB,ansC,ansD;
-    Button btn_submit;
-
-    int score=0;
-    int totalQuestion = QuestionAnswer.question.length;
-    int currentQuestionIndex =0;
-    String selectedAnswer="";
+public class MainActivity extends AppCompatActivity {
+    Button add;
+    AlertDialog dialog;
+    LinearLayout layout;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        totalQuestionTextView = findViewById(R.id.total_question);
-        questionTextView = findViewById(R.id.question);
-        ansA = findViewById(R.id.ans_a);
-        ansB = findViewById(R.id.ans_b);
-        ansC= findViewById(R.id.ans_c);
-        ansD = findViewById(R.id.ans_d);
-        btn_submit = findViewById(R.id.btn_submit);
+        add=findViewById(R.id.add);
+        layout=findViewById(R.id.container);
 
-        ansA.setOnClickListener(this);
-        ansB.setOnClickListener(this);
-        ansC.setOnClickListener(this);
-        ansD.setOnClickListener(this);
-        btn_submit.setOnClickListener(this);
-
-
-        totalQuestionTextView.setText("Total question: "+totalQuestion);
-
-        loadNewQuestion();
-    }
-
-    private void loadNewQuestion(){
-        if(currentQuestionIndex == totalQuestion){
-            finishQuiz();
-            return;
-        }
-        questionTextView.setText(QuestionAnswer.question[currentQuestionIndex]);
-        ansA.setText(QuestionAnswer.choices[currentQuestionIndex][0]);
-        ansB.setText(QuestionAnswer.choices[currentQuestionIndex][1]);
-        ansC.setText(QuestionAnswer.choices[currentQuestionIndex][2]);
-        ansD.setText(QuestionAnswer.choices[currentQuestionIndex][3]);
-
-        selectedAnswer="";
-
-    }
-
-    private void finishQuiz(){
-        String passStatus;
-        if(score >= totalQuestion*0.6){
-            passStatus = "Passed";
-        }else{
-            passStatus = "Failed";
-        }
-        new AlertDialog.Builder(this)
-                .setTitle(passStatus)
-                .setMessage("Your Score is "+score+" Out of "+totalQuestion)
-                .setPositiveButton("Restart",((dialog, i) -> restartQuiz() ))
-                .setCancelable(false)
-                .show();
-    }
-
-    private void restartQuiz(){
-        score = 0;
-        currentQuestionIndex=0;
-        loadNewQuestion();
-    }
-
-    @Override
-    public void onClick(View view){
-        ansA.setBackgroundColor(Color.WHITE);
-        ansB.setBackgroundColor(Color.WHITE);
-        ansC.setBackgroundColor(Color.WHITE);
-        ansD.setBackgroundColor(Color.WHITE);
-
-        Button clickedButton = (Button) view;
-
-        if(clickedButton.getId() == R.id.btn_submit) {
-            if(!selectedAnswer.isEmpty()){
-                if(selectedAnswer.equals(QuestionAnswer.correctAnswers[currentQuestionIndex])){
-                    score++;
-                }else{
-                    clickedButton.setBackgroundColor(Color.MAGENTA);
-                }
-                currentQuestionIndex++;
-                loadNewQuestion();
-            }else{
-
+        buildDialog();
+        add.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                dialog.show();
             }
-        }
-        else{
-            selectedAnswer=clickedButton.getText().toString();
-            clickedButton.setBackgroundColor(Color.YELLOW);
-        }
+        });
+
     }
+    public void buildDialog(){
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog, null);
+
+
+        final EditText name= view.findViewById(R.id.nameEdit);
+
+        builder.setView(view);
+        builder.setTitle("Enter your Task")
+                .setPositiveButton("SAVE",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick (DialogInterface dialog,int which){
+                        addCard(name.getText().toString());
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+
+        dialog = builder.create();
+    }
+    private void addCard(String name){
+        final View view = getLayoutInflater().inflate(R.layout.card,null);
+
+
+        TextView nameView = view.findViewById(R.id.name);
+        Button delete = view.findViewById(R.id.delete);
+        nameView.setText(name);
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                layout.removeView(view);
+            }
+        });
+        layout.addView(view);
+    }
+
 }
-
-
